@@ -9,3 +9,8 @@
 3- I generate AWS Zero-Spend Budget & Monthly Cost Budget if it exceed 1$.<br>
 4- I created an admin group then I creadted adminstrator user via IAM.<br>
 5- install AWS CLI on gitpod via this code<br>
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
