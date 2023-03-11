@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 class HomeActivities:
-  def run():
+  def run(cognito_user_id=None):
     #logger.info("HomeActivities")
     now = datetime.now(timezone.utc).astimezone()
     results = [{
@@ -42,4 +42,17 @@ class HomeActivities:
       'replies': []
     }
     ]
+
+    if cognito_user_id != None:
+        extra_crud = {
+          'uuid': '63b5387b-686c-4102-8c51-c9a57540f87b',
+          'handle':  'BSM',
+          'message': 'This is the week 3 of AWS cloud bootcamp',
+          'created_at': (now - timedelta(hours=1)).isoformat(),
+          'expires_at': (now + timedelta(hours=12)).isoformat(),
+          'likes': 1042,
+          'replies': []
+        }
+        results.insert(0,extra_crud)
+
     return results
