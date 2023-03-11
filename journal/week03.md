@@ -120,7 +120,7 @@ Give an error msg on the sign in page
   }
 ```
 
-![Username](assets/Week03-Week03-signin-username.png)<br>
+![Username](assets/Week03-signin-username.png)<br>
 
 ## Cognito user pool
 
