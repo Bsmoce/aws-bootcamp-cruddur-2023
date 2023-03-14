@@ -70,8 +70,6 @@ gp env CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur"
 psql $CONNECTION_URL
 ```
 
-chmod u+x bin/db-
-
 ## Create (and dropping) our database
 
 For things we commonly need to do we can create a new directory called `bin`
