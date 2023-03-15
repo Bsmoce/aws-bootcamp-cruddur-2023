@@ -265,3 +265,180 @@ source "$bin_path/db-schema-load"
 source "$bin_path/db-seed"
 ```
 > Then we change the file permissions: chmod u+x bin/db-setup <br>
+
+
+## Install Postgres Client
+
+We'll add the following to our `requirments.txt`
+
+```
+psycopg[binary]
+psycopg[pool]
+```
+```sh
+pip install -r requirements.txt
+```
+
+We need to set the env var for our backend-flask application `docker-compose.yml`:
+
+```yml
+  backend-flask:
+    environment:
+      CONNECTION_URL: "${CONNECTION_URL}"
+```
+
+
+## DB Object and Connection Pool
+
+
+`lib/db.py`
+
+```py
+from psycopg_pool import ConnectionPool
+import os
+
+def query_wrap_object(template):
+  sql = f"""
+  (SELECT COALESCE(row_to_json(object_row),'{{}}'::json) FROM (
+  {template}
+  ) object_row);
+  """
+  return sql
+
+def query_wrap_array(template):
+  sql = f"""
+  (SELECT COALESCE(array_to_json(array_agg(row_to_json(array_row))),'[]'::json) FROM (
+  {template}
+  ) array_row);
+  """
+  return sql
+
+connection_url = os.getenv("CONNECTION_URL")
+pool = ConnectionPool(connection_url)
+```
+
+In our `backend-flask/services/home_activities.py` we'll replace our mock endpoint with real api call:
+
+```py
+from lib.db import pool, query_wrap_array
+
+    sql = query_wrap_array("""
+      SELECT
+        activities.uuid,
+        users.display_name,
+        users.handle,
+        activities.message,
+        activities.replies_count,
+        activities.reposts_count,
+        activities.likes_count,
+        activities.reply_to_activity_uuid,
+        activities.expires_at,
+        activities.created_at
+      FROM public.activities
+      LEFT JOIN public.users ON users.uuid = activities.user_uuid
+      ORDER BY activities.created_at DESC
+    """)
+    print("SQL--------------")
+    print(sql)
+    print("SQL--------------")
+    with pool.connection() as conn:
+      with conn.cursor() as cur:
+        cur.execute(sql)
+        # this will return a tuple
+        # the first field being the data
+        json = cur.fetchone()
+    print("-------------------")
+    print(json[0])
+    return json[0]
+```
+
+## Setting up PROD DB 
+
+```sh
+export PROD_CONNECTION_URL="postgresql://root:<Password>@<DB Endpoint Name>:5432/cruddur"
+
+gp env PROD_CONNECTION_URL="postgresql://root:<Password>@<DB Endpoint Name>:5432/cruddur"
+
+psql $PROD_CONNECTION_URL
+```
+
+## Connect to RDS via Gitpod
+
+In order to connect to the RDS instance we need to provide our Gitpod IP and whitelist for inbound traffic on port 5432.
+
+```sh
+GITPOD_IP=$(curl ifconfig.me)
+```
+
+
+We'll create an inbound rule for Postgres (5432) and provide the GITPOD ID.
+
+We'll get the security group rule id so we can easily modify it in the future from the terminal here in Gitpod.
+
+```sh
+export DB_SG_ID="<General SecurityGroupRuleId>"
+gp env DB_SG_ID="<General SecurityGroupRuleId>"
+
+export DB_SG_RULE_ID="<SecurityGroupRuleId>"
+gp env DB_SG_RULE_ID="<SecurityGroupRuleId>"
+```
+
+Whenever we need to update our security groups we can do this for access.
+```sh
+aws ec2 modify-security-group-rules \
+    --group-id $DB_SG_ID \
+    --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
+```
+
+![Security Groups](assets/Week04-SG.png)<br>
+
+Then we will create a binary file `backend-flask/bin/rds-update-sg-rule`:
+
+```sh
+#! /usr/bin/bash
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="rds-update-sg-rule"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
+
+aws ec2 modify-security-group-rules \
+    --group-id $DB_SG_ID \
+    --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
+```
+> change the file permission `chmod u+x bin/rds-update-sg-rule`
+
+
+## Update Gitpod IP on new env var
+
+We'll add a command step for postgres:
+
+```sh
+    command: |
+      export GITPOD_IP=$(curl ifconfig.me)
+      source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule"
+```
+
+We will update `backend-flask/bin/db-connect` to connect PROD DB as well:
+
+```sh
+#! /usr/bin/bash
+if [ "$1" = "prod" ]; then
+  echo "Running in production mode"
+  URL=$PROD_CONNECTION_URL
+else
+  URL=$CONNECTION_URL
+fi
+
+psql $URL
+```
+
+Then we edit the `docker-compose.yml` file to redirect the connection to PROD DB:
+
+```yml
+CONNECTION_URL: "${PROD_CONNECTION_URL}"
+```
+
+![PROD-DB](assets/Week04-PROD-DB.png)<br>
+
+
