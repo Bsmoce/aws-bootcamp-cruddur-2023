@@ -441,4 +441,86 @@ CONNECTION_URL: "${PROD_CONNECTION_URL}"
 
 ![PROD-DB](assets/Week04-PROD-DB.png)<br>
 
+## Setup Cognito post confirmation lambda
+
+### Create the handler function
+
+- Create lambda in same vpc as rds instance Python 3.8
+- Add a layer for psycopg2 with one of the below methods for development or production 
+
+
+The function `aws/lambdas/cruddur-post-confirrmation.py`
+
+```py
+import json
+import psycopg2
+import os
+
+def lambda_handler(event, context):
+    user = event['request']['userAttributes']
+    print('userAttributes')
+    print(user)
+
+    user_display_name  = user['name']
+    user_email         = user['email']
+    user_handle        = user['preferred_username']
+    user_cognito_id    = user['sub']
+    try:
+      print('entered-try')
+      sql = """
+         INSERT INTO public.users (
+          display_name, 
+          email,
+          handle, 
+          cognito_user_id
+          ) 
+        VALUES(%s,%s,%s,%s)
+      """
+      print('SQL Statement ----')
+      print(sql)
+      conn = psycopg2.connect(os.getenv('CONNECTION_URL'))
+      cur = conn.cursor()
+      params = [
+        user_display_name,
+        user_email,
+        user_handle,
+        user_cognito_id
+      ]
+      cur.execute(sql, params)
+      conn.commit() 
+
+    except (Exception, psycopg2.DatabaseError) as error:
+      print(error)
+    finally:
+      if conn is not None:
+          cur.close()
+          conn.close()
+          print('Database connection closed.')
+    return event
+```
+Define a new policy for Lambda function permissions to setup the VPC Configuration:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateNetworkInterface",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DeleteNetworkInterface",
+                "ec2:UnassignPrivateIpAddresses",
+                "ec2:AssignPrivateIpAddresses"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+```
+
+![Lambda](assets/Week04-Lambda.png)<br>
+
 
