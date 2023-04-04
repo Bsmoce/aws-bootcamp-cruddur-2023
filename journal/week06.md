@@ -116,10 +116,6 @@ docker push $ECR_PYTHON_URL:3.10-slim-buster
 
 update `backend-flask/Dockerfile`
 
-FROM 354592008288.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster
--ENV FLASK_ENV=development
-+ENV FLASK_DEBUG=1
-
 ### For Flask
 
 #### Create Repo
