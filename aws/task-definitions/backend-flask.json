@@ -16,7 +16,7 @@
         "healthCheck": {
           "command": [
             "CMD-SHELL",
-            "python /backend-flask/bin/flask/health-check"
+            "python /backend-flask/bin/health-check"
           ],
           "interval": 30,
           "timeout": 5,
@@ -44,8 +44,8 @@
           {"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": "https://api.honeycomb.io"},
           {"name": "AWS_COGNITO_USER_POOL_ID", "value": "ca-central-1_UsjN952Tg"},
           {"name": "AWS_COGNITO_USER_POOL_CLIENT_ID", "value": "3677vra83pplne8l2jcemaougj"},
-          {"name": "FRONTEND_URL", "value": "*"},
-          {"name": "BACKEND_URL", "value": "*"},
+          {"name": "FRONTEND_URL", "value": "https://bsharp.cloud"},
+          {"name": "BACKEND_URL", "value": "https://api.bsharp.cloud"},
           {"name": "AWS_DEFAULT_REGION", "value": "ca-central-1"}
         ],
         "secrets": [
