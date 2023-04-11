@@ -660,3 +660,8 @@ aws ecs register-task-definition --cli-input-json file://aws/task-definitions/fr
 ```sh
 aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
 ```
+### Domain 'Prod Env'
+
+![Prod](assets/Week06-Prod-home.png)<br>
+
+![Prod](assets/Week06-Prod-msg.png)<br>
