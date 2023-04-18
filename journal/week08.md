@@ -291,3 +291,7 @@ const snsPublishPolicy = this.createPolicySnSPublish(snsTopic.topicArn)
 lambda.addToRolePolicy(s3ReadWritePolicy);
 lambda.addToRolePolicy(snsPublishPolicy);
 ```
+
+## Edit user page
+
+![USER](assets/Week08-img.png)<br>
