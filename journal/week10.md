@@ -51,7 +51,7 @@ We add the installations in `.gitpod.yml`:
 
 we add `aws/cfn/task-definition.guard`:
 
-```json
+```
 aws_ecs_cluster_configuration {
   rules = [
     {
