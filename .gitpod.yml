@@ -38,6 +38,11 @@ tasks:
       cd thumbing-serverless-cdk
       cp .env.example .env
       npm i
+  - name: cfn
+    before: |
+      pip install cfn-lint
+      cargo install cfn-guard
+      gem install cfn-toml
 vscode:
   extensions:
     - 42Crunch.vscode-openapi
