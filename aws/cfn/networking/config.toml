@@ -1,4 +1,4 @@
 [deploy]
-bucket = 'cfn-artifacts'
+bucket = 'cfn-bsharp'
 region = 'ca-central-1'
 stack_name = 'CrdNet'

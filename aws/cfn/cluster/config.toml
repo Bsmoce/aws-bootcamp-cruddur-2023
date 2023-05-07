@@ -1,0 +1,8 @@
+[deploy]
+bucket = 'cfn-bsharp'
+region = 'ca-central-1'
+stack_name = 'CrdCluster'
+
+[parameters]
+CertificateArn = 'arn:aws:acm:ca-central-1:354592008288:certificate/0405ee49-b14e-4cd6-8730-4fb8476bae3f'
+NetworkingStack = 'CrdNet'

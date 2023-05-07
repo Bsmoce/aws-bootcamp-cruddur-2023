@@ -1,4 +1,5 @@
 # Week 10 — CloudFormation Part 1
+
 ## Create an S3 bucket
 **we creat an s3 bucket to contain all of our artifacts for CloudFormation**
 
@@ -95,4 +96,90 @@ aws_ecs_cluster_configuration {
     },
   ]
 }
+```
+
+## YAML tags
+To be able to use !Ref and ! Sub tags in our tamplets we should go to `settings.json` and add the following tags
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference.html
+
+```yml
+{
+    "yaml.customTags": [
+        "!Base64 scalar",
+        "!Cidr scalar",
+        "!And sequence",
+        "!Equals sequence",
+        "!If sequence",
+        "!Not sequence",
+        "!Or sequence",
+        "!Condition scalar",
+        "!FindInMap sequence",
+        "!GetAtt scalar",
+        "!GetAtt sequence",
+        "!GetAZs scalar",
+        "!ImportValue scalar",
+        "!Join sequence",
+        "!Select sequence",
+        "!Split sequence",
+        "!Sub scalar",
+        "!Transform mapping",
+        "!Ref scalar",
+    ]
+}
+```
+
+
+## Setting up CloudFormation Networking Layer
+
+We add `aws/cfn/networking/template.yaml`:<br>
+
+This is a CloudFormation template for creating a VPC (Virtual Private Cloud) with base networking components. The template includes an internet gateway, a route table, and six subnets (three public and three private) that are explicitly associated with the route table. The public subnets are numbered 1 to 3, and the private subnets are numbered 1 to 3. The template allows the user to specify the VPC CIDR block, the availability zones for the subnets, and the CIDR blocks for the subnets.
+
+We add `bin/cfn/networking-deploy`:<br> 
+Which is deploying a CloudFormation stack using a template and a configuration file. It is also using cfn-lint to validate the CloudFormation template and cfn-toml to retrieve deployment parameters from the configuration file.
+
+>chmod u+x bin/cfn/networking-deploy
+
+#### CloudFormation toml
+
+We install cfn-toml:
+
+```sh
+gem install cfn-toml
+```
+
+We add `aws/cfn/networking/config.toml`:
+
+```sh
+[deploy]
+bucket = 'cfn-bsharp'
+region = 'ca-central-1'
+stack_name = 'CrdNet'
+```
+
+
+## Setting up CloudFormation Cluster Layer
+
+We add `aws/cfn/cluster/template.yaml`:<br>
+
+This is an AWS CloudFormation template that sets up the networking and cluster configuration to support Fargate containers. It creates an ECS Fargate Cluster, Application Load Balancer (ALB), ALB Security Group, HTTPS and HTTP Listeners, Frontend and Backend Target Groups, and other resources required for the configuration. It also includes various parameters that allow for customization of the configuration.
+
+We add `bin/cfn/cluster-deploy` which deploys a CloudFormation template to create a stack using parameters extracted from a TOML config file. It sets the stack name, region, S3 bucket, and applies tags.
+
+>chmod u+x bin/cfn/cluster-deploy
+
+
+#### CloudFormation toml
+
+We add `aws/cfn/cluster/config.toml`:
+
+```sh
+[deploy]
+bucket = 'cfn-bsharp'
+region = 'ca-central-1'
+stack_name = 'CrdCluster'
+
+[parameters]
+CertificateArn = 'arn:aws:acm:ca-central-1:354592008288:certificate/0405ee49-b14e-4cd6-8730-4fb8476bae3f'
+NetworkingStack = 'CrdNet'
 ```
