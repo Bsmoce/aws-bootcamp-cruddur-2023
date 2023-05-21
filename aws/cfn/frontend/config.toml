@@ -1,0 +1,9 @@
+[deploy]
+bucket = 'cfn-bsharp'
+region = 'ca-central-1'
+stack_name = 'CrdFrontend'
+
+[parameters]
+CertificateArn = 'arn:aws:acm:us-east-1:354592008288:certificate/e4e409ed-233d-4684-9f20-733af32f21bc'
+WwwBucketName = 'www.bsharp.cloud'
+RootBucketName = 'bsharp.cloud'
